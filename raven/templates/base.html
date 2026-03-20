@@ -1,0 +1,86 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" class="h-full bg-gray-50">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}RAVEN EASM{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        raven: { 50: '#f0f4ff', 100: '#dbe4ff', 200: '#bac8ff', 300: '#91a7ff', 400: '#748ffc', 500: '#5c7cfa', 600: '#4c6ef5', 700: '#4263eb', 800: '#3b5bdb', 900: '#364fc7' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .severity-critical { @apply bg-red-600 text-white; }
+        .severity-high { @apply bg-orange-500 text-white; }
+        .severity-medium { @apply bg-yellow-500 text-black; }
+        .severity-low { @apply bg-blue-400 text-white; }
+        .severity-info { @apply bg-gray-400 text-white; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full">
+    {% if user.is_authenticated %}
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-raven-800">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center">
+                        <a href="{% url 'dashboard:index' %}" class="text-white font-bold text-xl">
+                            RAVEN EASM
+                        </a>
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="{% url 'dashboard:index' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Dashboard" %}</a>
+                            <a href="{% url 'clients:list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Clients" %}</a>
+                            <a href="{% url 'engagements:list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Engagements" %}</a>
+                            {% if user.is_admin %}
+                            <a href="{% url 'accounts:user_list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Users" %}</a>
+                            <a href="{% url 'accounts:audit_log' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Audit Log" %}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-300 text-sm">
+                            {{ user.get_full_name|default:user.username }}
+                            <span class="inline-flex items-center rounded-full bg-raven-600 px-2 py-0.5 text-xs text-white ml-1">{{ user.get_role_display }}</span>
+                        </span>
+                        <a href="{% url 'accounts:profile' %}" class="text-gray-300 hover:text-white text-sm">{% trans "Profile" %}</a>
+                        <a href="{% url 'accounts:logout' %}" class="text-gray-300 hover:text-white text-sm">{% trans "Logout" %}</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+            <div class="rounded-md p-4 mb-2 {% if message.tags == 'error' %}bg-red-50 text-red-800{% elif message.tags == 'success' %}bg-green-50 text-green-800{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800{% else %}bg-blue-50 text-blue-800{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Content -->
+        <main>
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+        {% block anonymous_content %}{% endblock %}
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

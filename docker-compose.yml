@@ -1,0 +1,184 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-raven_easm}
+      POSTGRES_USER: ${POSTGRES_USER:-raven}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-raven}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - raven_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raven}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Celery broker + Channels + Cache) ────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - raven_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Django Web (ASGI via Daphne) ────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      - DJANGO_SETTINGS_MODULE=raven.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-easm.ravensec.eu,localhost}
+      - POSTGRES_DB=${POSTGRES_DB:-raven_easm}
+      - POSTGRES_USER=${POSTGRES_USER:-raven}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-raven}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CORRELATION_ENGINE=${CORRELATION_ENGINE:-claude}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - RAVEN_TEMPLATES_DIR=/templates
+    volumes:
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+      - ./documentation:/templates:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - raven_internal
+
+  # ── Celery Worker (reports, correlation, documents) ─────────────────
+  celery_worker:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    restart: unless-stopped
+    command: celery -A raven worker -Q default -l info --concurrency=4
+    environment:
+      - DJANGO_SETTINGS_MODULE=raven.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB:-raven_easm}
+      - POSTGRES_USER=${POSTGRES_USER:-raven}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-raven}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CORRELATION_ENGINE=${CORRELATION_ENGINE:-claude}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - RAVEN_TEMPLATES_DIR=/templates
+    volumes:
+      - media_volume:/app/media
+      - ./documentation:/templates:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - raven_internal
+
+  # ── Celery Beat (periodic scheduler) ────────────────────────────────
+  celery_beat:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    restart: unless-stopped
+    command: celery -A raven beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    environment:
+      - DJANGO_SETTINGS_MODULE=raven.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB:-raven_easm}
+      - POSTGRES_USER=${POSTGRES_USER:-raven}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-raven}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - raven_internal
+
+  # ── Scanner Worker (all recon tools) ────────────────────────────────
+  scanner:
+    build:
+      context: .
+      dockerfile: docker/scanner/Dockerfile
+    restart: unless-stopped
+    environment:
+      - DJANGO_SETTINGS_MODULE=raven.settings.production
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB:-raven_easm}
+      - POSTGRES_USER=${POSTGRES_USER:-raven}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-raven}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - SHODAN_API_KEY=${SHODAN_API_KEY:-}
+      - CENSYS_API_ID=${CENSYS_API_ID:-}
+      - CENSYS_API_SECRET=${CENSYS_API_SECRET:-}
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - raven_internal
+    # Scanner needs NET_ADMIN for nmap/masscan
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+  # ── Nginx (Reverse Proxy + SSL) ────────────────────────────────────
+  nginx:
+    build:
+      context: docker/nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - ./docker/nginx/certbot:/var/www/certbot:ro
+      - letsencrypt_data:/etc/letsencrypt
+    depends_on:
+      - web
+    networks:
+      - raven_internal
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_volume:
+  static_volume:
+  letsencrypt_data:
+
+networks:
+  raven_internal:
+    driver: bridge

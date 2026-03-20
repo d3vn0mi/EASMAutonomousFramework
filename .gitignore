@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+*.sqlite3
+raven/staticfiles/
+raven/media/
+
+# Environment
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Docker
+docker/nginx/certbot/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid

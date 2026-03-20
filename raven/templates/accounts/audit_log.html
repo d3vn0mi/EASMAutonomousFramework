@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Audit Log" %} - RAVEN EASM{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Audit Log" %}</h1>
+<div class="bg-white shadow overflow-hidden sm:rounded-md">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Timestamp" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "User" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Action" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Path" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "IP" %}</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for log in logs %}
+            <tr>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ log.timestamp }}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">{{ log.user }}</td>
+                <td class="px-6 py-4 text-sm"><span class="font-mono">{{ log.action }}</span></td>
+                <td class="px-6 py-4 text-sm text-gray-500 font-mono text-xs">{{ log.path }}</td>
+                <td class="px-6 py-4 text-sm">{{ log.status_code }}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ log.ip_address }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-6 py-4 text-sm text-gray-500 text-center">{% trans "No audit logs yet." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ finding.title }}</h1>
+        <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium {% if finding.severity == 'critical' %}bg-red-600 text-white{% elif finding.severity == 'high' %}bg-orange-500 text-white{% elif finding.severity == 'medium' %}bg-yellow-500 text-black{% elif finding.severity == 'low' %}bg-blue-400 text-white{% else %}bg-gray-400 text-white{% endif %}">{{ finding.get_severity_display }}</span>
+        {% if finding.cvss_score %}<span class="text-sm text-gray-500 ml-2">CVSS: {{ finding.cvss_score }}</span>{% endif %}
+        {% if finding.cve_id %}<span class="text-sm text-gray-500 ml-2">{{ finding.cve_id }}</span>{% endif %}
+    </div>
+    <div class="space-x-2">
+        <a href="{% url 'findings:edit' finding.pk %}" class="rounded-md bg-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-300">{% trans "Edit" %}</a>
+        <a href="{% url 'findings:remediation' finding.pk %}" class="rounded-md bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-500">{% trans "Remediation" %}</a>
+        <a href="{% url 'findings:escalate' finding.pk %}" class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-500">{% trans "Escalate" %}</a>
+    </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium mb-3">{% trans "Description" %}</h2>
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ finding.description }}</p>
+        {% if finding.evidence %}
+        <h2 class="text-lg font-medium mt-6 mb-3">{% trans "Evidence" %}</h2>
+        <pre class="text-xs bg-gray-50 p-3 rounded overflow-x-auto">{{ finding.evidence }}</pre>
+        {% endif %}
+    </div>
+    <div class="space-y-6">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium mb-3">{% trans "Recommendation" %}</h2>
+            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ finding.recommendation|default:"-" }}</p>
+        </div>
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium mb-3">{% trans "Remediation Status" %}</h2>
+            <p class="text-sm"><strong>{% trans "Status" %}:</strong> {{ finding.get_remediation_status_display }}</p>
+            {% if finding.remediation_deadline %}<p class="text-sm"><strong>{% trans "Deadline" %}:</strong> {{ finding.remediation_deadline }}</p>{% endif %}
+            {% if finding.remediation_notes %}<p class="text-sm mt-2">{{ finding.remediation_notes }}</p>{% endif %}
+        </div>
+        {% if escalations %}
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-medium mb-3">{% trans "Escalation History" %}</h2>
+            {% for esc in escalations %}
+            <div class="border-l-4 border-red-400 pl-3 mb-3">
+                <p class="text-sm"><strong>{{ esc.escalated_by }}</strong> via {{ esc.method }} &middot; {{ esc.created_at|date:"Y-m-d H:i" }}</p>
+                {% if esc.notes %}<p class="text-xs text-gray-500">{{ esc.notes }}</p>{% endif %}
+                <p class="text-xs {% if esc.acknowledged %}text-green-600{% else %}text-yellow-600{% endif %}">{% if esc.acknowledged %}{% trans "Acknowledged" %}{% else %}{% trans "Pending acknowledgement" %}{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

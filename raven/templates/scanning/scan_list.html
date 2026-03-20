@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{% trans "Scans" %} - {{ engagement.engagement_id }}</h1>
+    <a href="{% url 'scanning:start' engagement.pk %}" class="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">{% trans "New Scan" %}</a>
+</div>
+<div class="bg-white shadow rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50"><tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Phase" %}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Progress" %}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Started" %}</th>
+            <th class="px-6 py-3"></th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for scan in scans %}
+            <tr>
+                <td class="px-6 py-4 text-sm">{{ scan.get_phase_display }}</td>
+                <td class="px-6 py-4 text-sm"><span class="{% if scan.status == 'completed' %}text-green-600{% elif scan.status == 'running' %}text-blue-600{% else %}text-gray-500{% endif %}">{{ scan.get_status_display }}</span></td>
+                <td class="px-6 py-4"><div class="w-24 bg-gray-200 rounded-full h-2"><div class="bg-raven-600 h-2 rounded-full" style="width: {{ scan.progress }}%"></div></div></td>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ scan.created_at|date:"Y-m-d H:i" }}</td>
+                <td class="px-6 py-4 text-sm text-right">
+                    <a href="{% url 'scanning:progress' scan.pk %}" class="text-raven-600 hover:underline mr-3">{% trans "Progress" %}</a>
+                    <a href="{% url 'scanning:results' scan.pk %}" class="text-raven-600 hover:underline">{% trans "Results" %}</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">{% trans "No scans yet." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

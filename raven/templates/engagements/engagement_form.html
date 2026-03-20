@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{{ title|default:"engagement_form" }}</h1>
+<div class="bg-white shadow sm:rounded-lg p-6">
+    {% if scope_items %}
+    <div class="mb-6">
+        <h2 class="text-lg font-medium mb-3">{% trans "Current Scope" %}</h2>
+        <table class="min-w-full divide-y divide-gray-200 mb-4">
+            <thead><tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">{% trans "Type" %}</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">{% trans "Value" %}</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">{% trans "In Scope" %}</th>
+                <th class="px-4 py-2"></th>
+            </tr></thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for item in scope_items %}
+                <tr>
+                    <td class="px-4 py-2 text-sm">{{ item.get_item_type_display }}</td>
+                    <td class="px-4 py-2 text-sm font-mono">{{ item.value }}</td>
+                    <td class="px-4 py-2 text-sm">{% if item.in_scope %}{% trans "Yes" %}{% else %}{% trans "Excluded" %}{% endif %}</td>
+                    <td class="px-4 py-2 text-sm"><a href="{% url 'engagements:scope_delete' engagement.pk item.pk %}" class="text-red-600 hover:underline text-xs">{% trans "Remove" %}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if checklist %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="space-y-2">
+            {% for item in checklist.items %}
+            <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
+                <input type="checkbox" name="item_{{ forloop.counter0 }}" {% if item.checked %}checked{% endif %} class="h-4 w-4 text-raven-600 rounded border-gray-300">
+                <span class="text-sm {% if item.checked %}text-green-700 line-through{% else %}text-gray-900{% endif %}">{{ item.item }}</span>
+                {% if item.checked_by %}<span class="text-xs text-gray-400">{{ item.checked_by }}</span>{% endif %}
+            </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="mt-4 rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Save" %}</button>
+    </form>
+    {% elif available_testers %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="space-y-2">
+            {% for tester in available_testers %}
+            <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
+                <input type="checkbox" name="testers" value="{{ tester.pk }}" {% if tester in engagement.testers.all %}checked{% endif %} class="h-4 w-4 text-raven-600 rounded border-gray-300">
+                <span class="text-sm text-gray-900">{{ tester.get_full_name|default:tester.username }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="mt-4 rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Assign" %}</button>
+    </form>
+    {% else %}
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        {% if bulk_form %}
+        <hr class="my-6">
+        <h3 class="text-md font-medium mb-3">{% trans "Bulk Import" %}</h3>
+        {% for field in bulk_form %}
+        <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% endfor %}
+        <button type="submit" name="bulk_submit" value="1" class="rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-500 mr-2">{% trans "Bulk Import" %}</button>
+        {% endif %}
+        <button type="submit" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Save" %}</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

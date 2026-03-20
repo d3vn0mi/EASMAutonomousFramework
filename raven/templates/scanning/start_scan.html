@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Start Scan" %} - RAVEN EASM{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Start Scan" %} - {{ engagement.engagement_id }}</h1>
+<div class="bg-white shadow sm:rounded-lg p-6 max-w-lg">
+    <p class="text-sm text-gray-600 mb-4">{% trans "This will start an automated scan against all in-scope items for this engagement." %}</p>
+    <p class="text-sm text-gray-600 mb-4">{% trans "Tier" %}: <strong>{{ engagement.get_tier_display }}</strong> &middot; {% trans "Scope items" %}: <strong>{{ engagement.scope_items.count }}</strong></p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "Phase" %}</label>
+            <select name="phase" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-2 px-3 border">
+                <option value="discovery">{% trans "Phase 1 - Discovery" %}</option>
+                <option value="enumeration">{% trans "Phase 2 - Enumeration" %}</option>
+                <option value="vuln_assess">{% trans "Phase 3 - Vulnerability Assessment" %}</option>
+            </select>
+        </div>
+        <button type="submit" class="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">{% trans "Start Scan" %}</button>
+    </form>
+</div>
+{% endblock %}
