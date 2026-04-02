@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Asset, Client, Contact
+from .models import Asset, Client, CompanyProfile, Contact
 
 
 class ContactInline(admin.TabularInline):
@@ -18,3 +18,9 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ("status", "industry")
     search_fields = ("name",)
     inlines = [ContactInline, AssetInline]
+
+
+@admin.register(CompanyProfile)
+class CompanyProfileAdmin(admin.ModelAdmin):
+    list_display = ("client", "registration_number", "registration_country")
+    search_fields = ("client__name", "registration_number")

@@ -14,7 +14,7 @@ Your task is to:
 3. Prioritize risks — rank findings by real-world exploitability and business impact
 4. Write an executive summary — 2-3 paragraphs suitable for non-technical leadership
 
-Respond in JSON format with keys: attack_chains, patterns, risk_priorities, executive_summary"""
+Respond in JSON format with keys: attack_chains, patterns, risk_priorities, executive_summary, remediation_plan"""
 
 
 class OpenAICorrelationEngine(CorrelationEngine):
@@ -46,4 +46,5 @@ class OpenAICorrelationEngine(CorrelationEngine):
             patterns=data.get("patterns", []),
             risk_priorities=data.get("risk_priorities", []),
             executive_summary=data.get("executive_summary", ""),
+            remediation_plan=data.get("remediation_plan", []),
         )

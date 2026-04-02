@@ -77,6 +77,10 @@ class DiscoveredAsset(TimestampMixin):
     value = models.CharField(max_length=500)
     source_tool = models.CharField(max_length=50)
     metadata = models.JSONField(default=dict, blank=True)
+    technology_stack = models.JSONField(default=list, blank=True, verbose_name=_("Technology Stack"))
+    ssl_info = models.JSONField(default=dict, blank=True, verbose_name=_("SSL/TLS Info"))
+    whois_data = models.JSONField(default=dict, blank=True, verbose_name=_("WHOIS Data"))
+    screenshot = models.ImageField(upload_to="screenshots/%Y/%m/", blank=True, verbose_name=_("Screenshot"))
 
     class Meta:
         verbose_name = _("Discovered Asset")

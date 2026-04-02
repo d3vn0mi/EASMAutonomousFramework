@@ -8,7 +8,7 @@ from .base import CorrelationEngine, CorrelationOutput
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are an expert cybersecurity analyst performing EASM correlation analysis.
-Analyze the provided assets and findings. Respond in JSON with keys: attack_chains, patterns, risk_priorities, executive_summary"""
+Analyze the provided assets and findings. Respond in JSON with keys: attack_chains, patterns, risk_priorities, executive_summary, remediation_plan"""
 
 
 class OllamaCorrelationEngine(CorrelationEngine):
@@ -43,4 +43,5 @@ class OllamaCorrelationEngine(CorrelationEngine):
             patterns=data.get("patterns", []),
             risk_priorities=data.get("risk_priorities", []),
             executive_summary=data.get("executive_summary", ""),
+            remediation_plan=data.get("remediation_plan", []),
         )

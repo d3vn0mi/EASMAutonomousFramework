@@ -72,6 +72,8 @@ class ScopeItem(TimestampMixin):
         CIDR = "cidr", _("CIDR Range")
         EMAIL = "email", _("Email")
         NAME = "name", _("Person Name")
+        URL = "url", _("URL")
+        REPO = "repo", _("Repository")
 
     engagement = models.ForeignKey(
         Engagement, related_name="scope_items", on_delete=models.CASCADE,

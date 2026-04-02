@@ -46,6 +46,9 @@ class Finding(TimestampMixin):
     remediation_notes = models.TextField(blank=True)
     remediation_deadline = models.DateField(null=True, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
+    epss_score = models.FloatField(null=True, blank=True, verbose_name=_("EPSS Score"))
+    business_impact = models.TextField(blank=True, verbose_name=_("Business Impact"))
+    attack_path = models.JSONField(default=list, blank=True, verbose_name=_("Attack Path"))
 
     class Meta:
         ordering = ["-severity", "-created_at"]
@@ -75,3 +78,24 @@ class EscalationRecord(TimestampMixin):
 
     def __str__(self):
         return f"Escalation for {self.finding.title}"
+
+
+class BreachRecord(TimestampMixin):
+    engagement = models.ForeignKey(
+        "engagements.Engagement", related_name="breach_records", on_delete=models.CASCADE,
+    )
+    email_or_domain = models.CharField(max_length=500, verbose_name=_("Email or Domain"))
+    breach_name = models.CharField(max_length=255, verbose_name=_("Breach Name"))
+    breach_date = models.DateField(null=True, blank=True, verbose_name=_("Breach Date"))
+    pwn_count = models.PositiveIntegerField(default=0, verbose_name=_("Pwned Accounts"))
+    data_classes = models.JSONField(default=list, blank=True, verbose_name=_("Data Classes"))
+    source = models.CharField(max_length=50, default="hibp", verbose_name=_("Source"))
+    is_verified = models.BooleanField(default=False, verbose_name=_("Verified"))
+
+    class Meta:
+        ordering = ["-breach_date"]
+        verbose_name = _("Breach Record")
+        verbose_name_plural = _("Breach Records")
+
+    def __str__(self):
+        return f"{self.breach_name} ({self.email_or_domain})"

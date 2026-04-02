@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from apps.clients.models import Asset, Client, Contact
+from apps.clients.models import Asset, Client, CompanyProfile, Contact
 from apps.engagements.models import Engagement, ScopeItem
-from apps.findings.models import Finding
+from apps.findings.models import BreachRecord, Finding
 from apps.scanning.models import DiscoveredAsset, Scan
+from apps.correlation.models import CorrelationResult
 from apps.reports.models import Report
 
 
@@ -59,4 +60,22 @@ class DiscoveredAssetSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
+        fields = "__all__"
+
+
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyProfile
+        fields = "__all__"
+
+
+class BreachRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BreachRecord
+        fields = "__all__"
+
+
+class CorrelationResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CorrelationResult
         fields = "__all__"

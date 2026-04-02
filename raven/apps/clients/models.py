@@ -49,6 +49,7 @@ class Asset(TimestampMixin):
         EMAIL = "email", _("Email")
         NAME = "name", _("Person Name")
         URL = "url", _("URL")
+        REPO = "repo", _("Repository")
 
     client = models.ForeignKey(Client, related_name="assets", on_delete=models.CASCADE)
     asset_type = models.CharField(max_length=20, choices=AssetType.choices, verbose_name=_("Type"))
@@ -65,3 +66,23 @@ class Asset(TimestampMixin):
 
     def __str__(self):
         return f"{self.get_asset_type_display()}: {self.value}"
+
+
+class CompanyProfile(TimestampMixin):
+    client = models.OneToOneField(Client, related_name="profile", on_delete=models.CASCADE)
+    registration_number = models.CharField(max_length=100, blank=True, verbose_name=_("Registration Number"))
+    registration_country = models.CharField(max_length=100, blank=True, verbose_name=_("Registration Country"))
+    officers = models.JSONField(default=list, blank=True, verbose_name=_("Officers"))
+    social_media = models.JSONField(default=dict, blank=True, verbose_name=_("Social Media"))
+    domains_owned = models.JSONField(default=list, blank=True, verbose_name=_("Domains Owned"))
+    ip_ranges = models.JSONField(default=list, blank=True, verbose_name=_("IP Ranges"))
+    dns_summary = models.JSONField(default=dict, blank=True, verbose_name=_("DNS Summary"))
+    certificate_summary = models.JSONField(default=dict, blank=True, verbose_name=_("Certificate Summary"))
+    whois_data = models.JSONField(default=dict, blank=True, verbose_name=_("WHOIS Data"))
+
+    class Meta:
+        verbose_name = _("Company Profile")
+        verbose_name_plural = _("Company Profiles")
+
+    def __str__(self):
+        return f"Profile: {self.client.name}"

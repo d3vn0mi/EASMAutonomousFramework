@@ -1,0 +1,525 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ client.name }} &mdash; EASM Report</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --text: #c9d1d9; --heading: #e6edf3; --accent: #58a6ff;
+    --red: #f85149; --orange: #d29922; --green: #3fb950;
+    --purple: #bc8cff; --cyan: #39d353;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; padding: 2rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  header h1 { color: var(--heading); font-size: 2.2rem; margin-bottom: 0.5rem; }
+  header .subtitle { color: var(--accent); font-size: 1.1rem; }
+  header .meta { color: #8b949e; font-size: 0.85rem; margin-top: 0.5rem; }
+  .section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .section h2 {
+    color: var(--heading); font-size: 1.4rem; margin-bottom: 1rem;
+    padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  }
+  .section h3 { color: var(--accent); font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  }
+  .badge-critical { background: #3d0e0e; color: var(--red); border: 1px solid var(--red); }
+  .badge-high { background: #3d2200; color: var(--orange); border: 1px solid var(--orange); }
+  .badge-medium { background: #2d2200; color: #e3b341; border: 1px solid #e3b341; }
+  .badge-low { background: #0d2818; color: var(--green); border: 1px solid var(--green); }
+  .badge-info { background: #0d1d3d; color: var(--accent); border: 1px solid var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--accent); font-weight: 600; }
+  code {
+    background: #0d1117; border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; font-size: 0.85rem; color: var(--cyan);
+  }
+  .finding {
+    background: #0d1117; border-left: 3px solid var(--accent);
+    padding: 0.8rem 1rem; margin: 0.5rem 0; border-radius: 0 4px 4px 0;
+  }
+  .finding.warn { border-left-color: var(--orange); }
+  .finding.danger { border-left-color: var(--red); }
+  .finding.ok { border-left-color: var(--green); }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  @media (max-width: 768px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+  .summary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.2rem; text-align: center;
+  }
+  .summary-card .number { font-size: 2rem; font-weight: 700; color: var(--heading); }
+  .summary-card .label { font-size: 0.8rem; color: #8b949e; margin-top: 0.3rem; }
+  .attack-path {
+    background: linear-gradient(135deg, #1a0010 0%, #0d1117 100%);
+    border: 1px solid #3d0e0e; border-radius: 6px; padding: 1rem; margin: 0.5rem 0;
+  }
+  .attack-path .chain { font-family: monospace; color: var(--red); font-size: 0.85rem; margin-bottom: 0.4rem; }
+  .attack-path .desc { color: var(--text); font-size: 0.85rem; }
+  ul { margin-left: 1.5rem; margin-top: 0.3rem; }
+  li { margin-bottom: 0.3rem; }
+  a { color: var(--accent); text-decoration: none; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: white; color: #333; padding: 0; }
+    .section { border-color: #ddd; background: white; }
+    .summary-card { background: #f9f9f9; }
+    header h1 { color: #1a1a1a; }
+    th { color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Cover -->
+<header>
+  <h1>{{ client.name }} &mdash; EASM Report</h1>
+  <div class="subtitle">External Attack Surface Mapping &amp; OSINT Assessment</div>
+  <div class="meta">
+    Generated: {{ generated_date }} | Engagement: {{ engagement.engagement_id }} | Tier: {{ engagement.get_tier_display }} | Classification: Confidential<br>
+    Prepared by: RAVEN CYBERSECURITY IKE
+  </div>
+</header>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="number" style="color:#ff0040;">{{ summary.critical_count }}</div>
+    <div class="label">Critical Findings</div>
+  </div>
+  <div class="summary-card">
+    <div class="number" style="color:var(--red);">{{ summary.high_count }}</div>
+    <div class="label">High Findings</div>
+  </div>
+  <div class="summary-card">
+    <div class="number" style="color:var(--orange);">{{ summary.medium_count }}</div>
+    <div class="label">Medium Findings</div>
+  </div>
+  <div class="summary-card">
+    <div class="number" style="color:var(--green);">{{ summary.low_count|add:summary.info_count }}</div>
+    <div class="label">Low / Info</div>
+  </div>
+  <div class="summary-card">
+    <div class="number" style="color:var(--accent);">{{ summary.total_assets }}</div>
+    <div class="label">Assets Discovered</div>
+  </div>
+</div>
+
+<!-- Table of Contents -->
+<div class="section">
+  <h2>Table of Contents</h2>
+  <a href="#exec-summary" style="display:block;padding:0.2rem 0;">1. Executive Summary</a>
+  <a href="#scope" style="display:block;padding:0.2rem 0;">2. Scope &amp; Methodology</a>
+  <a href="#attack-surface" style="display:block;padding:0.2rem 0;">3. Attack Surface Overview</a>
+  <a href="#subdomains" style="display:block;padding:0.2rem 0;">4. Domain &amp; Subdomain Discovery</a>
+  <a href="#dns-infra" style="display:block;padding:0.2rem 0;">5. DNS &amp; Infrastructure Analysis</a>
+  <a href="#web-analysis" style="display:block;padding:0.2rem 0;">6. Web Application Analysis</a>
+  <a href="#ssl-tls" style="display:block;padding:0.2rem 0;">7. SSL/TLS Assessment</a>
+  <a href="#ports" style="display:block;padding:0.2rem 0;">8. Port &amp; Service Analysis</a>
+  <a href="#vulnerabilities" style="display:block;padding:0.2rem 0;">9. Vulnerability Findings</a>
+  <a href="#breaches" style="display:block;padding:0.2rem 0;">10. Data Breach Exposure</a>
+  <a href="#email-sec" style="display:block;padding:0.2rem 0;">11. Email Security</a>
+  <a href="#attack-chains" style="display:block;padding:0.2rem 0;">12. Attack Chain Analysis</a>
+  <a href="#risk-matrix" style="display:block;padding:0.2rem 0;">13. Risk Prioritization &amp; Remediation</a>
+  <a href="#recommendations" style="display:block;padding:0.2rem 0;">14. Recommendations</a>
+  <a href="#appendix" style="display:block;padding:0.2rem 0;">15. Appendices</a>
+</div>
+
+<!-- 1. Executive Summary -->
+<div class="section" id="exec-summary">
+  <h2>1. Executive Summary</h2>
+  {% if correlation and correlation.executive_summary %}
+    {{ correlation.executive_summary|linebreaksbr }}
+  {% else %}
+    <p>An External Attack Surface Management (EASM) assessment was conducted for <strong>{{ client.name }}</strong>
+    (Engagement {{ engagement.engagement_id }}, {{ engagement.get_tier_display }} tier).
+    The assessment identified <strong>{{ summary.total_findings }}</strong> findings across
+    <strong>{{ summary.total_assets }}</strong> discovered assets.</p>
+    <p>Of these, <strong>{{ summary.critical_count }}</strong> are rated Critical and
+    <strong>{{ summary.high_count }}</strong> are rated High severity, requiring immediate attention.</p>
+  {% endif %}
+</div>
+
+<!-- 2. Scope & Methodology -->
+<div class="section" id="scope">
+  <h2>2. Scope &amp; Methodology</h2>
+  <h3>In-Scope Items</h3>
+  <table>
+    <tr><th>Type</th><th>Value</th></tr>
+    {% for item in scope_items %}
+    <tr><td>{{ item.get_item_type_display }}</td><td><code>{{ item.value }}</code></td></tr>
+    {% empty %}
+    <tr><td colspan="2">No scope items defined</td></tr>
+    {% endfor %}
+  </table>
+  <h3>Methodology</h3>
+  <p>The assessment followed the RAVEN EASM {{ engagement.get_tier_display }} tier methodology comprising
+  passive OSINT collection, subdomain enumeration, DNS analysis, technology fingerprinting,
+  port scanning, vulnerability assessment, and AI-powered correlation analysis.</p>
+</div>
+
+<!-- 3. Attack Surface Overview -->
+<div class="section" id="attack-surface">
+  <h2>3. Attack Surface Overview</h2>
+  <table>
+    <tr><th>Asset Type</th><th>Count</th></tr>
+    {% for asset_type, asset_list in assets_by_type.items %}
+    <tr><td>{{ asset_type|title }}</td><td>{{ asset_list|length }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<!-- 4. Domain & Subdomain Discovery -->
+<div class="section" id="subdomains">
+  <h2>4. Domain &amp; Subdomain Discovery</h2>
+  {% if assets_by_type.domain %}
+  <table>
+    <tr><th>Subdomain</th><th>Source</th></tr>
+    {% for asset in assets_by_type.domain %}
+    <tr><td><code>{{ asset.value }}</code></td><td>{{ asset.source_tool }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No subdomains discovered.</p>
+  {% endif %}
+</div>
+
+<!-- 5. DNS & Infrastructure Analysis -->
+<div class="section" id="dns-infra">
+  <h2>5. DNS &amp; Infrastructure Analysis</h2>
+  {% if whois_data %}
+  <h3>WHOIS Information</h3>
+  {% for wd in whois_data %}
+  <table>
+    {% if wd.registrar %}<tr><td>Registrar</td><td>{{ wd.registrar }}</td></tr>{% endif %}
+    {% if wd.creation_date %}<tr><td>Created</td><td>{{ wd.creation_date }}</td></tr>{% endif %}
+    {% if wd.expiration_date %}<tr><td>Expires</td><td>{{ wd.expiration_date }}</td></tr>{% endif %}
+    {% if wd.registrant_org %}<tr><td>Organization</td><td>{{ wd.registrant_org }}</td></tr>{% endif %}
+    {% if wd.nameservers %}<tr><td>Nameservers</td><td>{% for ns in wd.nameservers %}{{ ns }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
+  </table>
+  {% endfor %}
+  {% endif %}
+  {% if dns_data %}
+  <h3>DNS Records</h3>
+  <table>
+    <tr><th>Record</th><th>Value</th></tr>
+    {% for record in dns_data %}
+    <tr><td>{{ record.type|default:"DNS" }}</td><td><code>{{ record.value|default:record }}</code></td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if dnstwist_data %}
+  <h3>Typosquatting Analysis</h3>
+  <table>
+    <tr><th>Domain</th><th>Type</th><th>DNS A</th></tr>
+    {% for perm in dnstwist_data|slice:":20" %}
+    <tr><td><code>{{ perm.domain }}</code></td><td>{{ perm.fuzzer }}</td><td>{{ perm.dns_a|default:"-" }}</td></tr>
+    {% endfor %}
+  </table>
+  {% if dnstwist_data|length > 20 %}<p style="color:#8b949e;font-size:0.85rem;">... and {{ dnstwist_data|length|add:"-20" }} more permutations</p>{% endif %}
+  {% endif %}
+</div>
+
+<!-- 6. Web Application Analysis -->
+<div class="section" id="web-analysis">
+  <h2>6. Web Application Analysis</h2>
+  {% if tech_data %}
+  <h3>Technology Stack</h3>
+  <table>
+    <tr><th>Technology</th><th>Version</th><th>Detail</th></tr>
+    {% for tech in tech_data %}
+    <tr>
+      <td>{{ tech.name }}</td>
+      <td>{{ tech.version|default:"-" }}</td>
+      <td>{{ tech.detail|default:"-" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if historical_urls %}
+  <h3>Historical URLs (Wayback/GAU)</h3>
+  <ul>
+    {% for url in historical_urls|slice:":30" %}
+    <li><code>{{ url }}</code></li>
+    {% endfor %}
+  </ul>
+  {% if historical_urls|length > 30 %}<p style="color:#8b949e;font-size:0.85rem;">... and {{ historical_urls|length|add:"-30" }} more URLs</p>{% endif %}
+  {% endif %}
+</div>
+
+<!-- 7. SSL/TLS Assessment -->
+<div class="section" id="ssl-tls">
+  <h2>7. SSL/TLS Assessment</h2>
+  {% if ssl_data %}
+  {% for result in ssl_data %}
+  <table>
+    {% for key, value in result.items %}
+    <tr><td><strong>{{ key }}</strong></td><td>{{ value }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+  {% else %}
+  <p>No SSL/TLS scan data available.</p>
+  {% endif %}
+</div>
+
+<!-- 8. Port & Service Analysis -->
+<div class="section" id="ports">
+  <h2>8. Port &amp; Service Analysis</h2>
+  {% if shodan_data %}
+  <h3>Shodan Intelligence</h3>
+  {% for result in shodan_data %}
+    {% if result.banners %}
+    <table>
+      <tr><th>Port</th><th>Protocol</th><th>Service</th><th>Version</th></tr>
+      {% for banner in result.banners %}
+      <tr>
+        <td>{{ banner.port }}</td>
+        <td>{{ banner.transport }}</td>
+        <td>{{ banner.product|default:"-" }}</td>
+        <td>{{ banner.version|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    {% if result.vulns %}
+    <div class="finding danger">
+      <strong>Shodan Vulnerabilities:</strong> {{ result.vulns|join:", " }}
+    </div>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+  {% if assets_by_type.ip %}
+  <h3>Discovered IPs</h3>
+  <table>
+    <tr><th>IP</th><th>Source</th></tr>
+    {% for asset in assets_by_type.ip %}
+    <tr><td><code>{{ asset.value }}</code></td><td>{{ asset.source_tool }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+<!-- 9. Vulnerability Findings -->
+<div class="section" id="vulnerabilities">
+  <h2>9. Vulnerability Findings</h2>
+  {% for severity, sev_findings in findings_by_severity.items %}
+  {% if sev_findings %}
+  <h3 style="margin-top:1.5rem;">{{ severity|title }} ({{ sev_findings|length }})</h3>
+  {% for finding in sev_findings %}
+  <div class="finding {% if severity == 'critical' %}danger{% elif severity == 'high' %}warn{% elif severity == 'medium' %}warn{% else %}ok{% endif %}">
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+      <span class="badge badge-{{ severity }}">{{ severity }}</span>
+      <strong style="color:var(--heading);">{{ finding.title }}</strong>
+      {% if finding.cvss_score %}<span style="color:#8b949e;font-size:0.8rem;">CVSS: {{ finding.cvss_score }}</span>{% endif %}
+      {% if finding.epss_score %}<span style="color:#8b949e;font-size:0.8rem;">EPSS: {{ finding.epss_score }}%</span>{% endif %}
+      {% if finding.cve_id %}<code>{{ finding.cve_id }}</code>{% endif %}
+    </div>
+    <p style="margin:0.3rem 0;">{{ finding.description|truncatewords:80 }}</p>
+    {% if finding.recommendation %}
+    <p style="color:var(--green);font-size:0.85rem;"><strong>Recommendation:</strong> {{ finding.recommendation|truncatewords:40 }}</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endfor %}
+  {% if not findings %}
+  <p>No vulnerability findings recorded.</p>
+  {% endif %}
+</div>
+
+<!-- 10. Data Breach Exposure -->
+<div class="section" id="breaches">
+  <h2>10. Data Breach Exposure</h2>
+  {% if breach_records %}
+  <table>
+    <tr><th>Breach</th><th>Target</th><th>Date</th><th>Pwned Count</th><th>Data Classes</th></tr>
+    {% for breach in breach_records %}
+    <tr>
+      <td>{{ breach.breach_name }}</td>
+      <td><code>{{ breach.email_or_domain }}</code></td>
+      <td>{{ breach.breach_date|default:"-" }}</td>
+      <td>{{ breach.pwn_count|default:"-" }}</td>
+      <td>{{ breach.data_classes|join:", " }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="finding ok">
+    <strong>Positive:</strong> No known data breach records found for the target scope.
+  </div>
+  {% endif %}
+</div>
+
+<!-- 11. Email Security -->
+<div class="section" id="email-sec">
+  <h2>11. Email Security</h2>
+  {% if email_security %}
+  {% for result in email_security %}
+  <table>
+    <tr><th>Control</th><th>Status</th><th>Details</th></tr>
+    <tr>
+      <td>SPF</td>
+      <td>{% if result.spf.exists %}<span class="badge badge-low">Present</span>{% else %}<span class="badge badge-high">Missing</span>{% endif %}</td>
+      <td><code>{{ result.spf.record|default:"-" }}</code></td>
+    </tr>
+    <tr>
+      <td>DMARC</td>
+      <td>{% if result.dmarc.exists %}<span class="badge badge-low">Present</span>{% else %}<span class="badge badge-high">Missing</span>{% endif %}</td>
+      <td>Policy: {{ result.dmarc.policy|default:"none" }}</td>
+    </tr>
+    <tr>
+      <td>DKIM</td>
+      <td>{% if result.dkim.exists %}<span class="badge badge-low">Present</span>{% else %}<span class="badge badge-medium">Not Found</span>{% endif %}</td>
+      <td>Selectors: {{ result.dkim.selectors_found|join:", "|default:"-" }}</td>
+    </tr>
+    <tr>
+      <td>Spoofable</td>
+      <td>{% if result.spoofable %}<span class="badge badge-critical">Yes</span>{% else %}<span class="badge badge-low">No</span>{% endif %}</td>
+      <td>{% if result.spoofable %}Domain can be spoofed in email{% else %}Email spoofing mitigated{% endif %}</td>
+    </tr>
+  </table>
+  {% if result.mx_records %}
+  <h3>MX Records</h3>
+  <table>
+    <tr><th>Priority</th><th>Server</th></tr>
+    {% for mx in result.mx_records %}
+    <tr><td>{{ mx.priority }}</td><td><code>{{ mx.server }}</code></td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  <p>Email security analysis not yet performed.</p>
+  {% endif %}
+</div>
+
+<!-- 12. Attack Chain Analysis -->
+<div class="section" id="attack-chains">
+  <h2>12. Attack Chain Analysis</h2>
+  {% if correlation and correlation.attack_chains %}
+  {% for chain in correlation.attack_chains %}
+  <div class="attack-path">
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+      {% if chain.severity %}<span class="badge badge-{{ chain.severity }}">{{ chain.severity }}</span>{% endif %}
+      <strong style="color:var(--heading);">{{ chain.title|default:chain.name|default:"Attack Chain" }}</strong>
+    </div>
+    {% if chain.chain %}<div class="chain">{{ chain.chain }}</div>{% endif %}
+    {% if chain.steps %}
+    <div class="chain">{% for step in chain.steps %}{{ step }}{% if not forloop.last %} &rarr; {% endif %}{% endfor %}</div>
+    {% endif %}
+    <div class="desc">{{ chain.description|default:chain.impact|default:"" }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p>No attack chains identified. Run AI correlation to generate attack chain analysis.</p>
+  {% endif %}
+</div>
+
+<!-- 13. Risk Prioritization & Remediation -->
+<div class="section" id="risk-matrix">
+  <h2>13. Risk Prioritization &amp; Remediation</h2>
+  {% if correlation and correlation.risk_priorities %}
+  <table>
+    <tr><th>#</th><th>Finding</th><th>Priority</th><th>Rationale</th></tr>
+    {% for risk in correlation.risk_priorities %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ risk.finding|default:risk.title|default:"-" }}</td>
+      <td><span class="badge badge-{{ risk.priority|default:'medium' }}">{{ risk.priority|default:"medium" }}</span></td>
+      <td>{{ risk.rationale|default:risk.reason|default:"-" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if correlation and correlation.remediation_plan %}
+  <h3>Remediation Timeline</h3>
+  <table>
+    <tr><th>Timeframe</th><th>Action</th><th>Priority</th></tr>
+    {% for item in correlation.remediation_plan %}
+    <tr>
+      <td>{{ item.timeframe|default:"-" }}</td>
+      <td>{{ item.action|default:item.description|default:"-" }}</td>
+      <td>{{ item.priority|default:"-" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+<!-- 14. Recommendations -->
+<div class="section" id="recommendations">
+  <h2>14. Recommendations</h2>
+  {% if correlation and correlation.patterns %}
+  <h3>Identified Patterns</h3>
+  <ul>
+    {% for pattern in correlation.patterns %}
+    <li>{{ pattern.description|default:pattern }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <h3>General Recommendations</h3>
+  <ul>
+    <li>Address all Critical and High severity findings within 30 days</li>
+    <li>Implement continuous attack surface monitoring</li>
+    <li>Conduct follow-up penetration testing on identified attack chains</li>
+    <li>Review and harden email security controls (SPF/DKIM/DMARC)</li>
+    <li>Perform regular secret scanning on code repositories</li>
+    <li>Schedule a retest engagement to verify remediation</li>
+  </ul>
+</div>
+
+<!-- 15. Appendices -->
+<div class="section" id="appendix">
+  <h2>15. Appendices</h2>
+  <h3>A. Tool Executions Summary</h3>
+  <table>
+    <tr><th>Tool</th><th>Target</th><th>Status</th><th>Duration</th></tr>
+    {% for te in tool_executions %}
+    <tr>
+      <td>{{ te.tool_name }}</td>
+      <td><code>{{ te.target|truncatechars:60 }}</code></td>
+      <td>{{ te.get_status_display }}</td>
+      <td>{% if te.started_at and te.completed_at %}{{ te.completed_at|timeuntil:te.started_at }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if secret_findings %}
+  <h3>B. Secret Scanning Results</h3>
+  <table>
+    <tr><th>Source</th><th>File</th><th>Type</th></tr>
+    {% for secret in secret_findings %}
+    <tr>
+      <td>{{ secret.source|default:secret.rule|default:"-" }}</td>
+      <td><code>{{ secret.file|default:"-" }}</code></td>
+      <td>{{ secret.detector|default:secret.description|default:"-" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+<!-- Footer -->
+<div style="text-align:center; padding:2rem 0 1rem; border-top:1px solid var(--border); margin-top:2rem; color:#8b949e; font-size:0.8rem;">
+  <p><strong>{{ client.name }} &mdash; EASM Report</strong></p>
+  <p>{{ engagement.engagement_id }} | {{ generated_date }} | RAVEN CYBERSECURITY IKE</p>
+  <p>{{ engagement.get_tier_display }} Tier Assessment | Classification: Confidential</p>
+</div>
+
+</div>
+</body>
+</html>

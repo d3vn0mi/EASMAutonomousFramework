@@ -40,7 +40,7 @@ class ToolRunner(ABC):
             return False
         return True
 
-    def run(self, target: str, options: dict | None = None, output_dir: str | None = None) -> dict:
+    def run(self, target: str, options: dict | None = None, output_dir: str | None = None, stdin_input: str | None = None) -> dict:
         """Execute the tool and return structured results."""
         if not self.validate_target(target):
             return {"error": f"Invalid target: {target}", "status": "failed"}
@@ -54,6 +54,7 @@ class ToolRunner(ABC):
                 capture_output=True,
                 text=True,
                 timeout=self.timeout,
+                input=stdin_input,
             )
             raw_output = result.stdout
             parsed = self.parse_output(raw_output)

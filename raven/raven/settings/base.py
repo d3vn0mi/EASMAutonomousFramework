@@ -181,6 +181,8 @@ OLLAMA_BASE_URL = config("OLLAMA_BASE_URL", default="http://localhost:11434")
 SHODAN_API_KEY = config("SHODAN_API_KEY", default="")
 CENSYS_API_ID = config("CENSYS_API_ID", default="")
 CENSYS_API_SECRET = config("CENSYS_API_SECRET", default="")
+HIBP_API_KEY = config("HIBP_API_KEY", default="")
+GITHUB_API_TOKEN = config("GITHUB_API_TOKEN", default="")
 
 # Path to the documentation templates (mounted read-only in Docker)
 RAVEN_TEMPLATES_DIR = config(

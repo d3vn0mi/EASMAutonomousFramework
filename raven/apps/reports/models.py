@@ -10,6 +10,11 @@ class Report(TimestampMixin):
         TECHNICAL = "technical", _("Technical Report")
         RETEST = "retest", _("Retest Report")
 
+    class Format(models.TextChoices):
+        DOCX = "docx", _("Word Document")
+        HTML = "html", _("HTML Report")
+        PDF = "pdf", _("PDF Report")
+
     class Status(models.TextChoices):
         DRAFT = "draft", _("Draft")
         GENERATED = "generated", _("Generated")
@@ -21,6 +26,9 @@ class Report(TimestampMixin):
         "engagements.Engagement", related_name="reports", on_delete=models.CASCADE,
     )
     report_type = models.CharField(max_length=20, choices=ReportType.choices)
+    report_format = models.CharField(
+        max_length=10, choices=Format.choices, default=Format.DOCX, verbose_name=_("Format"),
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     generated_file = models.FileField(upload_to="reports/%Y/%m/", blank=True)
     template_used = models.CharField(max_length=100, blank=True)

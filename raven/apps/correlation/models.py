@@ -15,6 +15,8 @@ class CorrelationResult(TimestampMixin):
     risk_priorities = models.JSONField(default=list, blank=True, verbose_name=_("Risk Priorities"))
     executive_summary = models.TextField(blank=True, verbose_name=_("Executive Summary"))
     confidence_score = models.FloatField(null=True, blank=True)
+    remediation_plan = models.JSONField(default=list, blank=True, verbose_name=_("Remediation Plan"))
+    business_impact_analysis = models.TextField(blank=True, verbose_name=_("Business Impact Analysis"))
 
     class Meta:
         ordering = ["-created_at"]
