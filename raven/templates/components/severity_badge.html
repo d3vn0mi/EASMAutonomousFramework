@@ -1,0 +1,5 @@
+{% if severity == "critical" %}<span class="inline-flex items-center rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-medium text-white">Critical</span>
+{% elif severity == "high" %}<span class="inline-flex items-center rounded-full bg-orange-500 px-2.5 py-0.5 text-xs font-medium text-white">High</span>
+{% elif severity == "medium" %}<span class="inline-flex items-center rounded-full bg-yellow-500 px-2.5 py-0.5 text-xs font-medium text-black">Medium</span>
+{% elif severity == "low" %}<span class="inline-flex items-center rounded-full bg-blue-400 px-2.5 py-0.5 text-xs font-medium text-white">Low</span>
+{% else %}<span class="inline-flex items-center rounded-full bg-gray-400 px-2.5 py-0.5 text-xs font-medium text-white">Info</span>{% endif %}

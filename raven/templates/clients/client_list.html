@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Clients" %} - RAVEN EASM{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{% trans "Clients" %}</h1>
+    {% if user.is_admin or user.is_project_manager %}
+    <a href="{% url 'clients:create' %}" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "New Client" %}</a>
+    {% endif %}
+</div>
+<div class="bg-white shadow overflow-hidden sm:rounded-md">
+    <ul class="divide-y divide-gray-200">
+        {% for client in clients %}
+        <li>
+            <a href="{% url 'clients:detail' client.pk %}" class="block hover:bg-gray-50 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-raven-700">{{ client.name }}</p>
+                        <p class="text-sm text-gray-500">{{ client.industry }} {% if client.website %}&middot; {{ client.website }}{% endif %}</p>
+                    </div>
+                    <span class="inline-flex rounded-full px-2 text-xs font-semibold {% if client.status == 'active' %}bg-green-100 text-green-800{% elif client.status == 'prospect' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">{{ client.get_status_display }}</span>
+                </div>
+            </a>
+        </li>
+        {% empty %}
+        <li class="px-6 py-4 text-sm text-gray-500 text-center">{% trans "No clients yet." %}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

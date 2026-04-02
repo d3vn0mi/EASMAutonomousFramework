@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block anonymous_content %}
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h1 class="text-center text-3xl font-bold text-raven-800">RAVEN EASM</h1>
+        <h2 class="mt-4 text-center text-xl text-gray-600">{% trans "Sign in to your account" %}</h2>
+    </div>
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        {% if messages %}{% for message in messages %}<div class="mb-4 rounded-md bg-red-50 p-4 text-red-800 text-sm">{{ message }}</div>{% endfor %}{% endif %}
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label for="id_username" class="block text-sm font-medium text-gray-900">{% trans "Username" %}</label>
+                <input type="text" name="username" id="id_username" required autofocus class="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-raven-600">
+            </div>
+            <div>
+                <label for="id_password" class="block text-sm font-medium text-gray-900">{% trans "Password" %}</label>
+                <input type="password" name="password" id="id_password" required class="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-raven-600">
+            </div>
+            <button type="submit" class="flex w-full justify-center rounded-md bg-raven-700 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-raven-600 focus:outline-none focus:ring-2 focus:ring-raven-500">{% trans "Sign in" %}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

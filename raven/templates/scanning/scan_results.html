@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Scan Results" %}</h1>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium mb-4">{% trans "Discovered Assets" %} ({{ discovered_assets.count }})</h2>
+        <div class="max-h-96 overflow-y-auto">
+            {% for asset in discovered_assets %}
+            <div class="py-2 border-b border-gray-100">
+                <span class="inline-flex rounded bg-gray-100 px-1.5 text-xs font-mono">{{ asset.asset_type }}</span>
+                <span class="text-sm ml-2">{{ asset.value }}</span>
+                <span class="text-xs text-gray-400 ml-1">via {{ asset.source_tool }}</span>
+            </div>
+            {% empty %}
+            <p class="text-sm text-gray-500">{% trans "No assets discovered." %}</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium mb-4">{% trans "Tool Results" %}</h2>
+        {% for te in tool_executions %}
+        <details class="mb-3 border rounded-md">
+            <summary class="px-4 py-2 cursor-pointer text-sm font-medium hover:bg-gray-50">
+                {{ te.tool_name }} &rarr; {{ te.target }}
+                <span class="{% if te.status == 'completed' %}text-green-600{% else %}text-red-600{% endif %} float-right">{{ te.get_status_display }}</span>
+            </summary>
+            <div class="px-4 py-2 bg-gray-50 text-xs font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">{{ te.raw_output|truncatechars:3000 }}</div>
+        </details>
+        {% endfor %}
+    </div>
+</div>
+<div class="mt-4">
+    <a href="{% url 'findings:import_from_scan' scan.engagement.pk scan.pk %}" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Import Findings from Scan" %}</a>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "AI Correlation Analysis" %} - {{ engagement.engagement_id }}</h1>
+<div class="bg-white shadow sm:rounded-lg p-6 max-w-lg">
+    <p class="text-sm text-gray-600 mb-4">{% trans "Run AI-powered correlation to identify attack chains, patterns, and risk priorities across all findings and discovered assets." %}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "AI Engine" %}</label>
+            <select name="engine" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-2 px-3 border">
+                <option value="">{% trans "Default (from settings)" %}</option>
+                <option value="claude">Claude (Anthropic)</option>
+                <option value="openai">OpenAI GPT-4</option>
+                <option value="ollama">Ollama (Local)</option>
+            </select>
+        </div>
+        <button type="submit" class="rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500">{% trans "Run Correlation" %}</button>
+    </form>
+</div>
+{% endblock %}

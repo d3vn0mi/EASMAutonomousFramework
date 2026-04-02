@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ client.name }} - RAVEN EASM{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{{ client.name }}</h1>
+    <div class="space-x-2">
+        {% if user.is_admin or user.is_project_manager %}
+        <a href="{% url 'clients:edit' client.pk %}" class="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">{% trans "Edit" %}</a>
+        <a href="{% url 'clients:contact_create' client.pk %}" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Add Contact" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Client Info -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium mb-4">{% trans "Details" %}</h2>
+        <dl class="space-y-2">
+            <div><dt class="text-sm text-gray-500">{% trans "Industry" %}</dt><dd class="text-sm text-gray-900">{{ client.industry|default:"-" }}</dd></div>
+            <div><dt class="text-sm text-gray-500">{% trans "Website" %}</dt><dd class="text-sm text-gray-900">{{ client.website|default:"-" }}</dd></div>
+            <div><dt class="text-sm text-gray-500">{% trans "Status" %}</dt><dd class="text-sm text-gray-900">{{ client.get_status_display }}</dd></div>
+        </dl>
+    </div>
+
+    <!-- Contacts -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium mb-4">{% trans "Contacts" %}</h2>
+        <ul class="space-y-3">
+            {% for contact in contacts %}
+            <li class="text-sm">
+                <p class="font-medium">{{ contact.name }} {% if contact.is_primary %}<span class="text-xs text-raven-600">({% trans "Primary" %})</span>{% endif %}</p>
+                <p class="text-gray-500">{{ contact.role }} &middot; {{ contact.email }}</p>
+            </li>
+            {% empty %}
+            <li class="text-sm text-gray-500">{% trans "No contacts." %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Assets -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium">{% trans "Assets" %}</h2>
+            <a href="{% url 'clients:asset_list' client.pk %}" class="text-sm text-raven-600 hover:underline">{% trans "View All" %}</a>
+        </div>
+        <p class="text-2xl font-bold text-gray-900">{{ assets.count }}</p>
+        <p class="text-sm text-gray-500">{% trans "total assets" %}</p>
+    </div>
+</div>
+
+<!-- Engagements -->
+<div class="mt-6 bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-medium mb-4">{% trans "Engagement History" %}</h2>
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead><tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{% trans "ID" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Name" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Tier" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Date" %}</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for eng in engagements %}
+            <tr>
+                <td class="px-4 py-2 text-sm"><a href="{% url 'engagements:detail' eng.pk %}" class="text-raven-600 hover:underline">{{ eng.engagement_id }}</a></td>
+                <td class="px-4 py-2 text-sm">{{ eng.name }}</td>
+                <td class="px-4 py-2 text-sm">{{ eng.get_tier_display }}</td>
+                <td class="px-4 py-2 text-sm">{{ eng.get_status_display }}</td>
+                <td class="px-4 py-2 text-sm text-gray-500">{{ eng.created_at|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">{% trans "No engagements." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
