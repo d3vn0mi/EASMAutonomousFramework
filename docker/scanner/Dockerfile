@@ -146,8 +146,8 @@ RUN nuclei -update-templates 2>/dev/null || true
 RUN git clone --depth 1 https://github.com/danielmiessler/SecLists.git /opt/seclists
 
 # ── Python app dependencies (Django + Celery) ────────────────────────────
-COPY requirements/scanner.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -r requirements/scanner.txt
 
 COPY raven/ /app/
 
