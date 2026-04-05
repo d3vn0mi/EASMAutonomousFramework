@@ -62,35 +62,35 @@ RUN AMASS_VER="v4.2.0" \
 RUN NUCLEI_VER="v3.3.7" \
     && curl -sSL "https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_VER}/nuclei_${NUCLEI_VER#v}_linux_amd64.zip" \
        -o /tmp/nuclei.zip \
-    && unzip /tmp/nuclei.zip -d /usr/local/bin/ \
+    && unzip -o /tmp/nuclei.zip -d /usr/local/bin/ \
     && chmod +x /usr/local/bin/nuclei \
     && rm /tmp/nuclei.zip
 
 RUN SUBFINDER_VER="v2.6.7" \
     && curl -sSL "https://github.com/projectdiscovery/subfinder/releases/download/${SUBFINDER_VER}/subfinder_${SUBFINDER_VER#v}_linux_amd64.zip" \
        -o /tmp/subfinder.zip \
-    && unzip /tmp/subfinder.zip -d /usr/local/bin/ \
+    && unzip -o /tmp/subfinder.zip -d /usr/local/bin/ \
     && chmod +x /usr/local/bin/subfinder \
     && rm /tmp/subfinder.zip
 
 RUN HTTPX_VER="v1.6.10" \
     && curl -sSL "https://github.com/projectdiscovery/httpx/releases/download/${HTTPX_VER}/httpx_${HTTPX_VER#v}_linux_amd64.zip" \
        -o /tmp/httpx.zip \
-    && unzip /tmp/httpx.zip -d /usr/local/bin/ \
+    && unzip -o /tmp/httpx.zip -d /usr/local/bin/ \
     && chmod +x /usr/local/bin/httpx \
     && rm /tmp/httpx.zip
 
 RUN DNSX_VER="v1.2.1" \
     && curl -sSL "https://github.com/projectdiscovery/dnsx/releases/download/${DNSX_VER}/dnsx_${DNSX_VER#v}_linux_amd64.zip" \
        -o /tmp/dnsx.zip \
-    && unzip /tmp/dnsx.zip -d /usr/local/bin/ \
+    && unzip -o /tmp/dnsx.zip -d /usr/local/bin/ \
     && chmod +x /usr/local/bin/dnsx \
     && rm /tmp/dnsx.zip
 
 RUN FEROX_VER="v2.11.0" \
     && curl -sSL "https://github.com/epi052/feroxbuster/releases/download/${FEROX_VER}/x86_64-linux-feroxbuster.zip" \
        -o /tmp/ferox.zip \
-    && unzip /tmp/ferox.zip -d /usr/local/bin/ \
+    && unzip -o /tmp/ferox.zip -d /usr/local/bin/ \
     && chmod +x /usr/local/bin/feroxbuster \
     && rm /tmp/ferox.zip
 
