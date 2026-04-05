@@ -106,7 +106,7 @@ RUN go install -v github.com/tomnomnom/assetfinder@latest \
     && go install -v github.com/sensepost/gowitness@latest \
     && go install -v github.com/ffuf/ffuf/v2@latest \
     && go install -v github.com/haccer/subjack@latest \
-    && go install -v github.com/gitleaks/gitleaks/v8@v8.18.4
+    && go install -v github.com/zricethezav/gitleaks/v8@v8.18.4
 
 RUN go install -v github.com/d3mondev/puredns/v2@latest || true
 
