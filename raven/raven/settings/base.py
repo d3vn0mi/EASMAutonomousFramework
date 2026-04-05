@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "channels",
     "rest_framework",
     "django_filters",
+    "django_celery_beat",
     # RAVEN apps
     "apps.accounts",
     "apps.dashboard",

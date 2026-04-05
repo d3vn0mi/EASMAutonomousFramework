@@ -14,7 +14,7 @@ services:
     networks:
       - raven_internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raven}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raven} -d ${POSTGRES_DB:-raven_easm}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -154,19 +154,22 @@ services:
       - NET_ADMIN
       - NET_RAW
 
-  # ── Nginx (Reverse Proxy + SSL) ────────────────────────────────────
-  nginx:
+  # ── Caddy (Reverse Proxy + Automatic HTTPS) ─────────────────────────
+  caddy:
     build:
-      context: docker/nginx
+      context: docker/caddy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL:-internal}
     volumes:
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
-      - ./docker/nginx/certbot:/var/www/certbot:ro
-      - letsencrypt_data:/etc/letsencrypt
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - web
     networks:
@@ -177,7 +180,8 @@ volumes:
   redis_data:
   media_volume:
   static_volume:
-  letsencrypt_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   raven_internal:
