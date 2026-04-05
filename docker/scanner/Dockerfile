@@ -103,16 +103,20 @@ RUN TRUFFLEHOG_VER="3.82.13" \
 RUN go install -v github.com/tomnomnom/assetfinder@latest \
     && go install -v github.com/tomnomnom/waybackurls@latest \
     && go install -v github.com/lc/gau/v2/cmd/gau@latest \
-    && go install -v github.com/sensepost/gowitness@latest \
     && go install -v github.com/ffuf/ffuf/v2@latest \
     && go install -v github.com/haccer/subjack@latest \
     && go install -v github.com/zricethezav/gitleaks/v8@v8.18.4
+
+# gowitness requires Go 1.23+ — install from release binary
+RUN GOWITNESS_VER="3.0.5" \
+    && curl -sSL "https://github.com/sensepost/gowitness/releases/download/${GOWITNESS_VER}/gowitness-${GOWITNESS_VER}-linux-amd64" \
+       -o /usr/local/bin/gowitness \
+    && chmod +x /usr/local/bin/gowitness
 
 RUN go install -v github.com/d3mondev/puredns/v2@latest || true
 
 # ── Python recon tools ───────────────────────────────────────────────────
 RUN pip install --no-cache-dir \
-    theHarvester \
     shodan \
     censys \
     dnstwist \
@@ -121,8 +125,15 @@ RUN pip install --no-cache-dir \
     dirsearch \
     arjun
 
-# recon-ng is not on PyPI — install from GitHub
-RUN pip install --no-cache-dir git+https://github.com/lanmaster53/recon-ng.git
+# theHarvester: PyPI package is a stale placeholder — install from GitHub
+RUN pip install --no-cache-dir git+https://github.com/laramies/theHarvester.git
+
+# recon-ng: no setup.py/pyproject.toml — clone and install its dependencies
+RUN git clone --depth 1 https://github.com/lanmaster53/recon-ng.git /opt/recon-ng \
+    && pip install --no-cache-dir -r /opt/recon-ng/REQUIREMENTS \
+    && ln -s /opt/recon-ng/recon-ng /usr/local/bin/recon-ng \
+    && ln -s /opt/recon-ng/recon-cli /usr/local/bin/recon-cli \
+    && chmod +x /opt/recon-ng/recon-ng /opt/recon-ng/recon-cli
 
 # ── testssl.sh ────────────────────────────────────────────────────────────
 RUN git clone --depth 1 https://github.com/drwetter/testssl.sh.git /opt/testssl.sh \
