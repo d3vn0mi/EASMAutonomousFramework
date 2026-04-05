@@ -115,12 +115,14 @@ RUN pip install --no-cache-dir \
     theHarvester \
     shodan \
     censys \
-    recon-ng \
     dnstwist \
     fierce \
     wafw00f \
     dirsearch \
     arjun
+
+# recon-ng is not on PyPI — install from GitHub
+RUN pip install --no-cache-dir git+https://github.com/lanmaster53/recon-ng.git
 
 # ── testssl.sh ────────────────────────────────────────────────────────────
 RUN git clone --depth 1 https://github.com/drwetter/testssl.sh.git /opt/testssl.sh \
