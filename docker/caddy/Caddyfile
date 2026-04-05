@@ -1,0 +1,53 @@
+{$DOMAIN:localhost} {
+    # Automatic HTTPS via Let's Encrypt (or self-signed for localhost)
+    tls {$CERTBOT_EMAIL:internal}
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';"
+    }
+
+    # Static files — 30 day cache
+    handle_path /static/* {
+        root * /app/staticfiles
+        file_server
+        header Cache-Control "public, max-age=2592000, immutable"
+    }
+
+    # Media files — internal only (served via X-Accel-Redirect pattern)
+    handle_path /media/* {
+        root * /app/media
+        file_server
+    }
+
+    # WebSocket
+    handle /ws/* {
+        reverse_proxy web:8000 {
+            transport http {
+                versions h2c 1.1
+            }
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Django application
+    handle {
+        reverse_proxy web:8000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Max upload size
+    request_body {
+        max_size 50MB
+    }
+}
