@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     whois \
     nmap \
-    nikto \
     masscan \
+    libnet-ssleay-perl \
     chromium \
     python3-dev \
     libpcap-dev \
@@ -41,6 +41,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dirb \
     whatweb \
     && rm -rf /var/lib/apt/lists/*
+
+# ── Nikto (from source — not in Debian Trixie repos) ────────────────────
+RUN git clone --depth 1 https://github.com/sullo/nikto.git /opt/nikto \
+    && ln -s /opt/nikto/program/nikto.pl /usr/local/bin/nikto \
+    && chmod +x /opt/nikto/program/nikto.pl
 
 # ── Go 1.22 ──────────────────────────────────────────────────────────────
 RUN curl -sSL https://go.dev/dl/go1.22.5.linux-amd64.tar.gz | tar -C /usr/local -xz \
