@@ -14,7 +14,7 @@ services:
     networks:
       - raven_internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raven}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raven} -d ${POSTGRES_DB:-raven_easm}"]
       interval: 10s
       timeout: 5s
       retries: 5
