@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ title }} - RAVEN EASM{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">{{ title }}</h1>
+<div class="bg-white shadow sm:rounded-lg p-6 max-w-2xl">
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}
+            </label>
+            {% if field.field.widget.input_type == 'select' or field.name == 'engagement' or field.name == 'assigned_to' or field.name == 'assessment_type' %}
+            <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-2 px-3 border focus:border-raven-500 focus:ring-raven-500">
+                {% for value, label in field.field.choices %}
+                <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% elif field.name == 'scope_text' %}
+            <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="6" placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-2 px-3 border font-mono focus:border-raven-500 focus:ring-raven-500">{{ field.value|default:"" }}</textarea>
+            {% else %}
+            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-2 px-3 border focus:border-raven-500 focus:ring-raven-500">
+            {% endif %}
+            {% if field.help_text %}<p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+            {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        <div class="flex space-x-3 mt-6">
+            <button type="submit" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Create Assessment" %}</button>
+            <a href="{% url 'assessments:list' %}" class="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

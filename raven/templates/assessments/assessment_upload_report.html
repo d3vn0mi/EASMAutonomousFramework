@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "Upload Report" %}: {{ assessment.name }} - RAVEN EASM{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-2">{% trans "Upload Report" %}</h1>
+<p class="text-sm text-gray-500 mb-6">{{ assessment.name }}</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Upload Form -->
+    <div class="bg-white shadow sm:rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Upload Your Report" %}</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-4">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                <input type="file" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                    accept=".pdf,.docx,.doc,.html,.md,.markdown"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-raven-50 file:text-raven-700 hover:file:bg-raven-100">
+                {% if field.help_text %}<p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+            {% endfor %}
+            <div class="flex space-x-3 mt-6">
+                <button type="submit" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Upload" %}</button>
+                <a href="{% url 'assessments:detail' assessment.pk %}" class="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">{% trans "Cancel" %}</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Template Info -->
+    <div class="bg-white shadow sm:rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Report Template" %}</h2>
+        <p class="text-sm text-gray-600 mb-4">
+            {% trans "Use the EASM report template as a starting point for your report. It includes all recommended sections based on the passive reconnaissance methodology." %}
+        </p>
+        <div class="space-y-3">
+            <a href="{% url 'assessments:report_template' %}" target="_blank" class="block w-full text-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">
+                {% trans "View Template (HTML)" %}
+            </a>
+            <a href="{% static 'templates/easm_report_template.md' %}" download class="block w-full text-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">
+                {% trans "Download Template (Markdown)" %}
+            </a>
+        </div>
+        <div class="mt-4 text-xs text-gray-500">
+            <p class="font-medium mb-1">{% trans "Template sections:" %}</p>
+            <ol class="list-decimal list-inside space-y-0.5">
+                <li>{% trans "Executive Summary" %}</li>
+                <li>{% trans "Engagement Details" %}</li>
+                <li>{% trans "Methodology" %}</li>
+                <li>{% trans "Subdomains Discovered" %}</li>
+                <li>{% trans "IP Addresses & ASNs" %}</li>
+                <li>{% trans "Email Addresses" %}</li>
+                <li>{% trans "Technologies Identified" %}</li>
+                <li>{% trans "Email Security Posture" %}</li>
+                <li>{% trans "Breach Data" %}</li>
+                <li>{% trans "Code & Repository Findings" %}</li>
+                <li>{% trans "Security Findings Summary" %}</li>
+                <li>{% trans "Risk Scoring Matrix" %}</li>
+                <li>{% trans "Recommendations" %}</li>
+                <li>{% trans "Appendices" %}</li>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

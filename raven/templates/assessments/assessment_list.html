@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Assessments" %} - RAVEN EASM{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{% trans "Assessments" %}</h1>
+    <div class="flex space-x-3">
+        <a href="{% url 'assessments:report_template' %}" class="rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-500">{% trans "Report Template" %}</a>
+        <a href="{% url 'assessments:create' %}" class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "New Assessment" %}</a>
+    </div>
+</div>
+<div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Name" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Type" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Engagement" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Progress" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Assigned To" %}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Created" %}</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for assessment in assessments %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm">
+                    <a href="{% url 'assessments:detail' assessment.pk %}" class="text-raven-600 hover:underline font-medium">{{ assessment.name }}</a>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {% if assessment.assessment_type == 'passive' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                        {{ assessment.get_assessment_type_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                    <a href="{% url 'engagements:detail' assessment.engagement.pk %}" class="text-raven-600 hover:underline">{{ assessment.engagement.name }}</a>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                        {% if assessment.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif assessment.status == 'in_progress' %}bg-blue-100 text-blue-800
+                        {% elif assessment.status == 'executed' %}bg-yellow-100 text-yellow-800
+                        {% elif assessment.status == 'pending_review' %}bg-orange-100 text-orange-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ assessment.get_status_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                            <div class="bg-raven-600 h-2 rounded-full" style="width: {{ assessment.progress_percent }}%"></div>
+                        </div>
+                        <span class="text-xs">{{ assessment.completed_steps }}/{{ assessment.total_steps }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ assessment.assigned_to.get_full_name|default:assessment.assigned_to.username|default:"-" }}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ assessment.created_at|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-4 text-sm text-gray-500 text-center">{% trans "No assessments yet." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

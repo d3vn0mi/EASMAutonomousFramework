@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+{% block title %}{{ assessment.name }} - RAVEN EASM{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ assessment.name }}</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                {% trans "Engagement" %}: <a href="{% url 'engagements:detail' assessment.engagement.pk %}" class="text-raven-600 hover:underline">{{ assessment.engagement.name }}</a>
+            </p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {% if assessment.assessment_type == 'passive' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                {{ assessment.get_assessment_type_display }}
+            </span>
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+                {% if assessment.status == 'completed' %}bg-green-100 text-green-800
+                {% elif assessment.status == 'in_progress' %}bg-blue-100 text-blue-800
+                {% elif assessment.status == 'executed' %}bg-yellow-100 text-yellow-800
+                {% elif assessment.status == 'pending_review' %}bg-orange-100 text-orange-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {{ assessment.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="bg-white shadow sm:rounded-lg p-6 mb-6">
+    <div class="flex justify-between text-sm text-gray-600 mb-2">
+        <span>{% trans "Progress" %}</span>
+        <span>{{ assessment.completed_steps }} / {{ assessment.total_steps }} {% trans "steps" %}</span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="bg-raven-600 h-3 rounded-full transition-all" style="width: {{ assessment.progress_percent }}%"></div>
+    </div>
+    <p class="text-right text-xs text-gray-400 mt-1">{{ assessment.progress_percent }}%</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Scope -->
+    <div class="lg:col-span-2">
+        <div class="bg-white shadow sm:rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-3">{% trans "Scope" %}</h2>
+            <pre class="bg-gray-50 p-4 rounded-md text-sm font-mono whitespace-pre-wrap text-gray-700">{{ assessment.scope_text }}</pre>
+        </div>
+
+        <!-- Steps Overview -->
+        <div class="bg-white shadow sm:rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-3">{% trans "Steps Overview" %}</h2>
+            <div class="space-y-1">
+                {% for sp in progress %}
+                <div class="flex items-center space-x-3 py-1">
+                    {% if sp.completed %}
+                    <span class="text-green-600 text-sm">&#10003;</span>
+                    {% else %}
+                    <span class="text-gray-300 text-sm">&#9675;</span>
+                    {% endif %}
+                    <span class="text-sm {% if sp.completed %}text-green-700{% else %}text-gray-700{% endif %}">
+                        {{ sp.step.step_number }} - {{ sp.step.title }}
+                    </span>
+                    {% if sp.completed_by %}
+                    <span class="text-xs text-gray-400">{{ sp.completed_by.username }} @ {{ sp.completed_at|date:"Y-m-d H:i" }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    <div>
+        <div class="bg-white shadow sm:rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Actions" %}</h2>
+            <div class="space-y-3">
+                {% if assessment.status == 'draft' or assessment.status == 'in_progress' %}
+                <a href="{% url 'assessments:execute' assessment.pk %}" class="block w-full text-center rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">
+                    {% if assessment.status == 'draft' %}{% trans "Start Execution" %}{% else %}{% trans "Continue Execution" %}{% endif %}
+                </a>
+                {% endif %}
+
+                {% if assessment.status == 'executed' %}
+                <a href="{% url 'assessments:upload_report' assessment.pk %}" class="block w-full text-center rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">
+                    {% trans "Upload Report" %}
+                </a>
+                <a href="{% url 'assessments:report_template' %}" target="_blank" class="block w-full text-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">
+                    {% trans "View Report Template" %}
+                </a>
+                {% endif %}
+
+                {% if assessment.status == 'pending_review' %}
+                <form method="post" action="{% url 'assessments:mark_reviewed' assessment.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600">
+                        {% trans "Mark as Reviewed" %}
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if assessment.report_file %}
+                <a href="{{ assessment.report_file.url }}" target="_blank" class="block w-full text-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">
+                    {% trans "Download Report" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="bg-white shadow sm:rounded-lg p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-3">{% trans "Details" %}</h2>
+            <dl class="space-y-2 text-sm">
+                <div>
+                    <dt class="text-gray-500">{% trans "Assigned To" %}</dt>
+                    <dd class="text-gray-900">{{ assessment.assigned_to.get_full_name|default:assessment.assigned_to.username|default:"-" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">{% trans "Created By" %}</dt>
+                    <dd class="text-gray-900">{{ assessment.created_by.get_full_name|default:assessment.created_by.username|default:"-" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">{% trans "Created" %}</dt>
+                    <dd class="text-gray-900">{{ assessment.created_at|date:"Y-m-d H:i" }}</dd>
+                </div>
+                {% if assessment.report_uploaded_at %}
+                <div>
+                    <dt class="text-gray-500">{% trans "Report Uploaded" %}</dt>
+                    <dd class="text-gray-900">{{ assessment.report_uploaded_at|date:"Y-m-d H:i" }} ({{ assessment.report_uploaded_by.username }})</dd>
+                </div>
+                {% endif %}
+                {% if assessment.completed_at %}
+                <div>
+                    <dt class="text-gray-500">{% trans "Completed" %}</dt>
+                    <dd class="text-gray-900">{{ assessment.completed_at|date:"Y-m-d H:i" }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

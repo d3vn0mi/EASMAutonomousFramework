@@ -41,6 +41,7 @@
                             <a href="{% url 'dashboard:index' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Dashboard" %}</a>
                             <a href="{% url 'clients:list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Clients" %}</a>
                             <a href="{% url 'engagements:list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Engagements" %}</a>
+                            <a href="{% url 'assessments:list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Assessments" %}</a>
                             {% if user.is_admin %}
                             <a href="{% url 'accounts:user_list' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Users" %}</a>
                             <a href="{% url 'accounts:audit_log' %}" class="text-gray-300 hover:bg-raven-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{% trans "Audit Log" %}</a>

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django_filters",
     "django_celery_beat",
     # RAVEN apps
+    "apps.assessments",
     "apps.accounts",
     "apps.dashboard",
     "apps.clients",

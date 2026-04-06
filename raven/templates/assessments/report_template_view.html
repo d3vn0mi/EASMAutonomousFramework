@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "EASM Report Template" %} - RAVEN EASM{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{% trans "EASM Report Template" %}</h1>
+    <a href="{% static 'templates/easm_report_template.md' %}" download class="rounded-md bg-raven-700 px-4 py-2 text-sm font-semibold text-white hover:bg-raven-600">{% trans "Download Markdown" %}</a>
+</div>
+
+<div class="bg-white shadow sm:rounded-lg p-8 prose prose-sm max-w-none">
+
+    <h1>EASM Passive Reconnaissance Report</h1>
+    <hr>
+
+    <h2>1. Executive Summary</h2>
+    <table>
+        <tr><td><strong>Assessment Name</strong></td><td><em>[Assessment Name]</em></td></tr>
+        <tr><td><strong>Assessment Type</strong></td><td>Passive Reconnaissance</td></tr>
+        <tr><td><strong>Overall Risk Rating</strong></td><td><em>[Critical / High / Medium / Low]</em></td></tr>
+    </table>
+    <p>Provide a brief (2-3 paragraph) executive summary describing the purpose, high-level findings, and key recommendations.</p>
+
+    <h2>2. Engagement Details</h2>
+    <table>
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>Client</td><td><em>[Client Name]</em></td></tr>
+            <tr><td>Engagement ID</td><td><em>[RAVEN-EASM-YYYY-NNN]</em></td></tr>
+            <tr><td>Assessment Date</td><td><em>[Start Date] - [End Date]</em></td></tr>
+            <tr><td>Operator</td><td><em>[Engineer Name]</em></td></tr>
+            <tr><td>Methodology</td><td>RAVEN EASM Passive Reconnaissance Guide v2.0</td></tr>
+        </tbody>
+    </table>
+
+    <h3>2.1 Scope</h3>
+    <table>
+        <thead><tr><th>Type</th><th>Value</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Domain</td><td><em>example.com</em></td><td><em>Primary domain</em></td></tr>
+            <tr><td>CIDR</td><td><em>203.0.113.0/24</em></td><td><em>Main IP range</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>3. Methodology</h2>
+    <p>This assessment followed the RAVEN EASM Passive Reconnaissance Guide v2.0, consisting of 5 phases:</p>
+    <ol>
+        <li><strong>Domain Intelligence</strong> - WHOIS, ASN, crt.sh, subdomain enumeration, historical URLs, Google dorking, typosquatting, OSINT harvesting, LinkedIn OSINT</li>
+        <li><strong>IP &amp; Infrastructure Intelligence</strong> - Shodan lookup, service/banner analysis, CVE identification</li>
+        <li><strong>Email Intelligence</strong> - SPF/DKIM/DMARC assessment, breach data lookup</li>
+        <li><strong>Code &amp; Repository Intelligence</strong> - GitHub organization recon, secret scanning</li>
+        <li><strong>Compile &amp; Correlate</strong> - Asset inventory, risk scoring, prioritization</li>
+    </ol>
+
+    <h2>4. Subdomains Discovered</h2>
+    <table>
+        <thead><tr><th>Subdomain</th><th>Source</th><th>IP Address</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td><em>staging.example.com</em></td><td><em>crt.sh</em></td><td><em>203.0.113.10</em></td><td><em>200 OK</em></td><td><em>Staging environment</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>5. IP Addresses &amp; ASN Information</h2>
+    <table>
+        <thead><tr><th>IP Address</th><th>Open Ports</th><th>Services</th><th>Software</th><th>CVEs</th></tr></thead>
+        <tbody>
+            <tr><td><em>203.0.113.10</em></td><td><em>80, 443</em></td><td><em>HTTP, HTTPS</em></td><td><em>nginx 1.24</em></td><td><em>None</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>6. Email Addresses</h2>
+    <table>
+        <thead><tr><th>Email</th><th>Source</th><th>In Breach Data?</th><th>Breaches</th></tr></thead>
+        <tbody>
+            <tr><td><em>admin@example.com</em></td><td><em>theHarvester</em></td><td><em>Yes</em></td><td><em>Collection #1</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>7. Technologies Identified</h2>
+    <table>
+        <thead><tr><th>Technology</th><th>Version</th><th>Source</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td><em>nginx</em></td><td><em>1.24.0</em></td><td><em>Shodan</em></td><td><em>Web server</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>8. Email Security Posture</h2>
+    <table>
+        <thead><tr><th>Record</th><th>Value</th><th>Risk Level</th><th>Recommendation</th></tr></thead>
+        <tbody>
+            <tr><td>SPF</td><td><em>v=spf1 ... ~all</em></td><td><em>Medium</em></td><td><em>Change to -all</em></td></tr>
+            <tr><td>DMARC</td><td><em>p=none</em></td><td><em>Medium</em></td><td><em>Upgrade to p=reject</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>9. Breach Data</h2>
+    <table>
+        <thead><tr><th>Breach</th><th>Date</th><th>Records</th><th>Data Types</th><th>Affected</th></tr></thead>
+        <tbody>
+            <tr><td><em>Collection #1</em></td><td><em>Jan 2019</em></td><td><em>773M</em></td><td><em>Emails, Passwords</em></td><td><em>1 email</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>10. Code &amp; Repository Findings</h2>
+    <table>
+        <thead><tr><th>Tool</th><th>Repository</th><th>Secret Type</th><th>Verified?</th><th>Commit</th></tr></thead>
+        <tbody>
+            <tr><td><em>TruffleHog</em></td><td><em>org/repo</em></td><td><em>AWS Key</em></td><td><em>Yes</em></td><td><em>abc1234</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>11. Security Findings Summary</h2>
+    <table>
+        <thead><tr><th>ID</th><th>Severity</th><th>Title</th><th>Asset</th><th>Recommendation</th></tr></thead>
+        <tbody>
+            <tr><td>F-001</td><td><span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">Critical</span></td><td><em>Live AWS Key</em></td><td><em>github.com/org/repo</em></td><td><em>Rotate immediately</em></td></tr>
+            <tr><td>F-002</td><td><span class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">High</span></td><td><em>Missing DMARC</em></td><td><em>example.com</em></td><td><em>Enable p=reject</em></td></tr>
+        </tbody>
+    </table>
+
+    <h2>12. Risk Scoring Matrix</h2>
+    <table>
+        <thead><tr><th>Severity</th><th>Criteria</th><th>Examples</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Critical</strong></td><td>Live secrets, active exploits</td><td><em>F-001</em></td></tr>
+            <tr><td><strong>High</strong></td><td>Missing security controls, breach exposure</td><td><em>F-002</em></td></tr>
+            <tr><td><strong>Medium</strong></td><td>Weak configs, outdated software</td><td></td></tr>
+            <tr><td><strong>Low</strong></td><td>Informational</td><td></td></tr>
+        </tbody>
+    </table>
+
+    <h2>13. Recommendations</h2>
+    <h3>Immediate Actions (Critical/High)</h3>
+    <ol>
+        <li><em>Rotate leaked credentials and audit access logs</em></li>
+        <li><em>Enforce DMARC policy</em></li>
+        <li><em>Force password reset for breached accounts</em></li>
+    </ol>
+    <h3>Short-term Actions (Medium)</h3>
+    <ol start="4">
+        <li><em>Harden SPF/DKIM configuration</em></li>
+        <li><em>Update outdated software</em></li>
+    </ol>
+    <h3>Long-term Actions</h3>
+    <ol start="6">
+        <li><em>Implement continuous monitoring</em></li>
+        <li><em>Conduct full active assessment</em></li>
+    </ol>
+
+    <h2>14. Appendices</h2>
+    <p><em>Attach raw tool outputs, full subdomain lists, and detailed Shodan results here.</em></p>
+
+    <hr>
+    <p class="text-xs text-gray-400"><em>Report generated using RAVEN EASM Platform - Template v1.0</em></p>
+</div>
+{% endblock %}
