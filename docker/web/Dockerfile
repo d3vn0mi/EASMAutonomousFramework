@@ -21,9 +21,9 @@ COPY requirements/base.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY raven/ /app/
-
-RUN python manage.py collectstatic --noinput --settings=raven.settings.production 2>/dev/null || true
+COPY docker/web/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "raven.asgi:application"]
+ENTRYPOINT ["/entrypoint.sh"]
